@@ -1,0 +1,32 @@
+version: '2.3'
+services:
+  rate-limit-api:
+    hostname: rate-limit-api
+    image: valentinconan/rate-limit-api:master
+    restart: unless-stopped
+    healthcheck:
+      test: wget -O /dev/null http://localhost:3000/health || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "3000:3000"
+    networks:
+      - nest-network
+
+  rate-limit-api-native:
+    hostname: rate-limit-api-native
+    image: valentinconan/rate-limit-api-native:master
+    restart: unless-stopped
+    healthcheck:
+      test: wget -O /dev/null http://localhost:3000/health || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "3001:3000"
+    networks:
+      - nest-network
+networks:
+  nest-network:
+    driver: bridge

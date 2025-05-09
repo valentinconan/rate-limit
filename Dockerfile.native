@@ -1,0 +1,10 @@
+FROM alpine:3.16
+ARG VERSION
+ENV APP_VERSION=$VERSION
+
+RUN apk add gcompat libstdc++
+
+COPY bin/main /native
+RUN chmod +x native
+
+CMD ./native
