@@ -27,6 +27,15 @@ services:
       - "3001:3000"
     networks:
       - nest-network
+  redis:
+    hostname: redis
+    image: 'bitnami/redis:7.2.5'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 6379:6379
+    networks:
+      - nest-network
 networks:
   nest-network:
     driver: bridge
