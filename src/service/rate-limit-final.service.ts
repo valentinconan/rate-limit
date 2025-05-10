@@ -1,9 +1,10 @@
 import Redis from 'ioredis';
-import {SetOptions} from "redis";
-import {Injectable} from "@nestjs/common";
+import {Injectable, Logger} from "@nestjs/common";
 
 @Injectable()
 export class RateLimitFinalService {
+    private logger = new Logger(RateLimitFinalService.name)
+
     private readonly redis: Redis;
 
     private readonly rateKey: string = 'ratelimit';
@@ -15,7 +16,7 @@ export class RateLimitFinalService {
     /** the range in milliseconds **/
     private readonly windowRange: number = 1000;
 
-    private requestCount:number=1;
+    private requestCount: number = 1;
 
     constructor() {
         this.redis = new Redis({
@@ -26,9 +27,7 @@ export class RateLimitFinalService {
 
     private async acquireLock(): Promise<boolean> {
         // use expiration to prevent deadlocks
-        const options = {NX: true, PX: 1000} as SetOptions;
-        //@ts-ignore
-        const locked = await this.redis.set(this.lockKey, '1', options);
+        const locked = await this.redis.set(this.lockKey, '1', 'EX', 1000);
         return locked === 'OK';
     }
 
@@ -37,11 +36,10 @@ export class RateLimitFinalService {
     }
 
     async canMakeRequest(retry: number = 5): Promise<boolean> {
-
         try {
             if (!await this.acquireLock()) {
                 if (retry > 0) {
-                    await wait();
+                    await this.wait();
                     return await this.canMakeRequest(--retry);
                 }
                 throw new Error("Failed to acquire lock")
@@ -63,19 +61,22 @@ export class RateLimitFinalService {
                 return true;
             }
             if (retry > 0) {
-                await wait();
+                await this.wait();
                 return await this.canMakeRequest(--retry);
             }
             throw new Error("None request available")
-        }catch(e){
+        } catch (e) {
             await this.releaseLock();
+            throw e;
         }
     }
-}
-async function wait(ms: number = 5000): Promise<void> {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve();
-        }, ms);
-    });
+
+    async wait(ms: number = 1000): Promise<void> {
+        this.logger.warn(`Waiting ${ms}ms for the next call`);
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve();
+            }, ms);
+        });
+    }
 }
