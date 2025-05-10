@@ -1,5 +1,14 @@
 version: '2.3'
 services:
+  proxy:
+    image: nginx:1.14.0
+    volumes:
+      - ${NGINX_ROOT_DIR:-.}/volumes/proxy/:/etc/nginx/conf.d/
+    networks:
+      - nest-network
+    ports:
+      - 80:80
+
   rate-limit-api:
     hostname: rate-limit-api
     image: valentinconan/rate-limit-api:master
@@ -11,8 +20,6 @@ services:
       interval: 1s
       timeout: 5s
       retries: 10
-    ports:
-      - "3000:3000"
     networks:
       - nest-network
 
