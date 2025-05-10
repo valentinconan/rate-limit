@@ -1,13 +1,16 @@
-import {Catch, ExceptionFilter, ExecutionContext} from '@nestjs/common';
+import {Catch, ExceptionFilter, ExecutionContext, Logger} from '@nestjs/common';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+
+    private logger = new Logger(GlobalExceptionFilter.name)
+
     catch(exception: any, host: ExecutionContext) {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse();
 
         // Log the error (optional)
-        console.error(exception.message);
+        this.logger.error(exception.message);
 
         // Return an HTTP error response
         const errorResponse = {
