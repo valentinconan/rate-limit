@@ -1,7 +1,8 @@
-import {Injectable} from "@nestjs/common";
+import {Injectable, Logger} from "@nestjs/common";
 
 @Injectable()
 export class RateLimitRetryService {
+    private logger = new Logger(RateLimitRetryService.name)
 
     /** the limit of call in the windows range **/
     private readonly limitValue: number = 5;
@@ -9,8 +10,8 @@ export class RateLimitRetryService {
     private readonly windowRange: number = 1000;
 
     private windowStart: string;
-    private requestCount:number=1;
-    private remainingRequests:number=5;
+    private requestCount: number = 1;
+    private remainingRequests: number = 5;
 
     constructor() {
     }
@@ -20,8 +21,8 @@ export class RateLimitRetryService {
 
         // if windows doesn't exist or is expired, renew it
         if (!this.windowStart || (now - parseInt(this.windowStart)) >= this.windowRange) {
-            this.windowStart=now.toString();
-            this.remainingRequests=this.limitValue;
+            this.windowStart = now.toString();
+            this.remainingRequests = this.limitValue;
         }
 
         if (this.remainingRequests >= this.requestCount) {
@@ -29,16 +30,20 @@ export class RateLimitRetryService {
             return true;
         }
         if (retry > 0) {
-            await wait();
+            await this.wait();
             return await this.canMakeRequest(--retry);
         }
         throw new Error("None request available")
     }
+
+    async wait(ms: number = 1000): Promise<void> {
+        this.logger.warn(`Waiting ${ms}ms for the next call`);
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve();
+            }, ms);
+        });
+    }
+
 }
-async function wait(ms: number = 1000): Promise<void> {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve();
-        }, ms);
-    });
-}
+
