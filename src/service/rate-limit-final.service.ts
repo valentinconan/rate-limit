@@ -20,7 +20,7 @@ export class RateLimitFinalService {
 
     constructor() {
         this.redis = new Redis({
-            host: 'redis',
+            host: process.env.REDIS_HOSTNAME || 'localhost',
             port: 6379,
         });
     }

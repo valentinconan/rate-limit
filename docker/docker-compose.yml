@@ -4,6 +4,8 @@ services:
     hostname: rate-limit-api
     image: valentinconan/rate-limit-api:master
     restart: unless-stopped
+    environment:
+      - REDIS_HOSTNAME=redis
     healthcheck:
       test: wget -O /dev/null http://localhost:3000/health || exit 1
       interval: 1s
@@ -18,6 +20,8 @@ services:
     hostname: rate-limit-api-native
     image: valentinconan/rate-limit-api-native:master
     restart: unless-stopped
+    environment:
+      - REDIS_HOSTNAME=redis
     healthcheck:
       test: wget -O /dev/null http://localhost:3000/health || exit 1
       interval: 1s
