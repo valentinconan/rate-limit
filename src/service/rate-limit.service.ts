@@ -1,6 +1,5 @@
 import {Injectable} from "@nestjs/common";
 
-
 @Injectable()
 export class RateLimitService {
 
@@ -8,10 +7,9 @@ export class RateLimitService {
     private readonly limitValue: number = 5;
     /** the range in milliseconds **/
     private readonly windowRange: number = 1000;
-
     private windowStart: string;
-    private requestCount:number=1;
-    private remainingRequests:number=5;
+    private requestCount: number = 1;
+    private remainingRequests: number = 5;
 
     constructor() {
     }
@@ -21,8 +19,8 @@ export class RateLimitService {
 
         // if windows doesn't exist or is expired, renew it
         if (!this.windowStart || (now - parseInt(this.windowStart)) >= this.windowRange) {
-            this.windowStart=now.toString();
-            this.remainingRequests=this.limitValue;
+            this.windowStart = now.toString();
+            this.remainingRequests = this.limitValue;
         }
 
         if (this.remainingRequests >= this.requestCount) {
